@@ -1,0 +1,167 @@
+import numpy as np
+import polars as pl
+import pandas as pd
+
+
+data = pd.read_csv('Data_YearFromQuarter.csv')
+
+QUARTER_PER_CYCLE = 4
+DELAY_QUARTER = 4
+NUMBER_QUARTER = len(np.unique(data.TIME)) - 3
+NUMBER_TYPE_IN4 = 4 #(profit, value, rank_not_invest, limit)
+
+NUMBER_CAN_INVEST = NUMBER_QUARTER // 3
+NUMBER_HISTORY = 16
+
+START_QUARTER = NUMBER_HISTORY + QUARTER_PER_CYCLE
+
+ATTRIBUTE_FOMULA = 25
+NUMBER_PLAYER = 2
+AMOUNT_ACTION = 3
+
+INDEX = 0
+#thông tin công thức 1
+ENV_FIRST_HISTORY = INDEX
+INDEX += NUMBER_HISTORY
+
+ENV_FIRST_GMEAN = INDEX
+INDEX += 1
+
+ENV_FIRST_HMEAN = INDEX
+INDEX += 1
+
+ENV_FIRST_RANK_NOT_INVEST = INDEX
+INDEX += 1
+
+ENV_FIRST_LIMIT = INDEX
+INDEX += 1
+
+ENV_FIRST_VALUE = INDEX
+INDEX += 1
+
+#thông tin công thức 2
+ENV_SECOND_HISTORY = INDEX
+INDEX += NUMBER_HISTORY
+
+ENV_SECOND_GMEAN = INDEX
+INDEX += 1
+
+ENV_SECOND_HMEAN = INDEX
+INDEX += 1
+
+ENV_SECOND_RANK_NOT_INVEST = INDEX
+INDEX += 1
+
+ENV_SECOND_LIMIT = INDEX
+INDEX += 1
+
+ENV_SECOND_VALUE = INDEX
+INDEX += 1
+
+#result 
+ENV_PLAYER_CAN_INVEST = INDEX
+INDEX += NUMBER_PLAYER
+
+ENV_COUNT_DELAY_AGENT = INDEX
+INDEX += NUMBER_PLAYER
+
+ENV_PROFIT_DELAY_AGENT = INDEX
+INDEX += NUMBER_PLAYER
+
+ENV_PROFIT_AGENT = INDEX
+INDEX += NUMBER_PLAYER
+
+ENV_CHECK_END = INDEX
+INDEX += 1
+ENV_COUNT_PLAYER_ACTION = INDEX
+INDEX += 1
+ENV_CURRENT_QUARTER = INDEX
+INDEX += 1
+ENV_UPDATE_RESULT = INDEX
+INDEX += NUMBER_PLAYER
+ENV_ID_ACTION = INDEX 
+INDEX += 1
+
+ENV_ALL_IN4_FIRST = INDEX
+INDEX += NUMBER_QUARTER * NUMBER_TYPE_IN4
+
+ENV_ALL_IN4_SECOND = INDEX
+INDEX += NUMBER_QUARTER * NUMBER_TYPE_IN4
+
+ENV_LENGTH = INDEX
+
+P_INDEX = 0
+#thông tin công thức 1
+P_FIRST_HISTORY = P_INDEX
+P_INDEX += NUMBER_HISTORY
+
+P_FIRST_GMEAN = P_INDEX
+P_INDEX += 1
+
+P_FIRST_HMEAN = P_INDEX
+P_INDEX += 1
+
+P_FIRST_RANK_NOT_INVEST = P_INDEX
+P_INDEX += 1
+
+P_FIRST_LIMIT = P_INDEX
+P_INDEX += 1
+
+P_FIRST_VALUE = P_INDEX
+P_INDEX += 1
+
+#thông tin công thức 2
+P_SECOND_HISTORY = P_INDEX
+P_INDEX += NUMBER_HISTORY
+
+P_SECOND_GMEAN = P_INDEX
+P_INDEX += 1
+
+P_SECOND_HMEAN = P_INDEX
+P_INDEX += 1
+
+P_SECOND_RANK_NOT_INVEST = P_INDEX
+P_INDEX += 1
+
+P_SECOND_LIMIT = P_INDEX
+P_INDEX += 1
+
+P_SECOND_VALUE = P_INDEX
+P_INDEX += 1
+
+#riêng
+P_PROFIT_MULTI = P_INDEX
+P_INDEX += NUMBER_PLAYER
+
+P_PLAYER_CAN_INVEST = P_INDEX
+P_INDEX += 1
+
+P_UPDATE_RESULT = P_INDEX
+P_INDEX += NUMBER_PLAYER
+
+P_CHECK_END = P_INDEX
+P_INDEX += 1
+
+
+
+P_LENGTH = P_INDEX
+
+ALL_LIMIT = np.load('./congthuc/all_limit.npy', allow_pickle= True)
+
+ALL_PROFIT = np.load('./congthuc/all_profit.npy', allow_pickle= True)
+
+ALL_VALUE = np.load('./congthuc/all_value.npy', allow_pickle= True)
+
+ALL_RANK_NOT_INVEST = np.load('./congthuc/arr_rank_not_invest.npy', allow_pickle= True)
+
+ALL_INDEX = np.arange(len(ALL_LIMIT))
+
+
+from numba import njit, jit
+@njit()
+def hmean(arr):
+    return len(arr)/np.sum(1/arr)
+
+@njit()
+def gmean(arr):
+    return np.exp(np.mean(np.log(arr)))
